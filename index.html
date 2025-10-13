@@ -1,17 +1,165 @@
 <!DOCTYPE html>
-<!-- HORIZONTE JIU JITSU • TIMER v1.9.0_m1 -->
 <html lang="pt-BR" data-theme="horizon">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>HORIZONTE JIU JITSU • TIMER — v1.9.0_m1</title>
-<link rel="icon" href="./favicon.ico" sizes="16x16 32x32 48x48 64x64 128x128 256x256">
-<link rel="manifest" href="manifest.json" />
-<link rel="stylesheet" href="styles.css" />
-<script defer src="script.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>HORIZONTE JIU JITSU • TIMER — v1.9.0_m1</title>
+
+  <!-- Ícones / PWA -->
+  <link rel="icon" href="./favicon.ico" sizes="16x16 32x32 48x48 64x64 128x128 256x256">
+  <link rel="icon" type="image/png" href="./icon-256.png" sizes="256x256">
+  <link rel="apple-touch-icon" href="./apple-touch-icon.png" sizes="180x180">
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#070a10" />
+
+  <link rel="stylesheet" href="styles.css" />
+  <script defer src="script.js"></script>
 </head>
-<body>
-<h1>HORIZONTE JIU JITSU • TIMER v1.9.0_m1</h1>
-<p>Aplicativo atualizado com responsividade total e correções de splash.</p>
+
+<body data-state="paused" data-device="desktop" class="splashing">
+  <!-- SPLASH (tela inicial com logo, 5s, bloqueando rolagem) -->
+  <div id="splash" aria-label="Tela inicial com logo da equipe">
+    <img src="assets/logo.png" alt="Logo HORIZONTE JIU JITSU" class="splash-logo" />
+  </div>
+
+  <main class="container">
+    <!-- Topo -->
+    <header class="topbar">
+      <div class="datetime">
+        <div id="dateText" aria-live="polite"></div>
+        <div id="timeText" aria-live="polite"></div>
+      </div>
+
+      <!-- Título: 2 linhas em mobile/tablet -->
+      <h1 class="brand" id="appTitle">
+        <span class="line1">HORIZONTE JIU-JITSU</span><br class="mobile-break" />
+        <span class="line2">• TIMER •</span>
+      </h1>
+
+      <!-- Controles do topo (desktop/TV) -->
+      <div class="right-side">
+        <div class="top-controls">
+          <label class="inline">
+            <span>Tema</span>
+            <select id="themeSelect" aria-label="Selecionar tema">
+              <option value="horizon">Horizon (escuro)</option>
+              <option value="classico">Clássico (escuro)</option>
+              <option value="claro">Claro</option>
+              <option value="estados">Cores por estado</option>
+            </select>
+          </label>
+
+          <label class="inline">
+            <span>Sons</span>
+            <select id="soundSelect" aria-label="Ativar sons">
+              <option value="on">ON</option>
+              <option value="off">OFF</option>
+            </select>
+          </label>
+        </div>
+      </div>
+    </header>
+
+    <section class="timer-section" id="timerSection">
+      <!-- LOGO SUPERIOR (mobile/tablet) -->
+      <img src="assets/logo.png" alt="Logo HORIZONTE" class="logo-top mobile-only" id="logoTop" />
+
+      <!-- Painel Round / Status -->
+      <div id="statusPanel" class="status-panel">ROUND 1/1 • PAUSADO</div>
+
+      <!-- Display + Logo lateral (desktop/TV mantém lado direito) -->
+      <div class="display-wrap">
+        <div class="display" id="countdownDisplay" aria-live="polite">00:00</div>
+        <img src="assets/logo.png" alt="Logo HORIZONTE" class="logo-mark side desktop-only" id="logoMain" />
+      </div>
+
+      <!-- Configurações -->
+      <form id="setForm" class="set-form" onsubmit="return false">
+        <label><strong>PREPARAÇÃO</strong>
+          <select id="prepSelect">
+            <option value="0" selected>Off</option>
+            <option value="5">5s</option>
+            <option value="10">10s</option>
+          </select>
+        </label>
+
+        <label><strong>TEMPO — MIN</strong>
+          <select id="minutesSelect">
+            <option value="0">0</option>
+            <option value="1">1</option><option value="2">2</option>
+            <option value="3">3</option><option value="4">4</option>
+            <option value="5" selected>5</option><option value="6">6</option>
+            <option value="7">7</option><option value="8">8</option>
+            <option value="9">9</option><option value="10">10</option>
+          </select>
+        </label>
+
+        <label><strong>TEMPO — SEG</strong>
+          <select id="secondsSelect">
+            <option value="0">0s</option>
+            <option value="15">15s</option>
+            <option value="30">30s</option>
+            <option value="45">45s</option>
+          </select>
+        </label>
+
+        <label><strong>ROUNDS</strong>
+          <select id="roundsSelect">
+            <option value="1" selected>1</option>
+            <option value="2">2</option><option value="3">3</option>
+            <option value="4">4</option><option value="5">5</option>
+          </select>
+        </label>
+
+        <label><strong>INTERVALO</strong>
+          <select id="restSelect">
+            <option value="10">10s</option>
+            <option value="20">20s</option>
+            <option value="30" selected>30s</option>
+            <option value="40">40s</option>
+            <option value="50">50s</option>
+            <option value="60">60s</option>
+          </select>
+        </label>
+
+        <button id="applyBtn" class="btn btn-define btn-lg btn-fixed btn-define-like-select" type="button"><strong>DEFINIR</strong></button>
+      </form>
+
+      <!-- Controles -->
+      <div class="controls" id="controls">
+        <button id="startPauseBtn" class="btn primary btn-lg btn-fixed"><strong>INICIAR</strong></button>
+        <button id="stopBtn" class="btn danger btn-lg btn-fixed"><strong>PARAR</strong></button>
+        <button id="resetBtn" class="btn btn-lg btn-fixed" disabled><strong>RESET</strong></button>
+        <button id="soundTestBtn" class="btn btn-lg btn-fixed"><strong>TESTAR SOM</strong></button>
+      </div>
+
+      <!-- Seletores reposicionados (mobile/tablet) -->
+      <div class="mobile-bottom-selects mobile-only">
+        <label class="inline">
+          <span>Tema</span>
+          <select id="themeSelectMobile">
+            <option value="horizon">Horizon</option>
+            <option value="classico">Clássico</option>
+            <option value="claro">Claro</option>
+            <option value="estados">Cores por estado</option>
+          </select>
+        </label>
+        <label class="inline">
+          <span>Sons</span>
+          <select id="soundSelectMobile">
+            <option value="on">ON</option>
+            <option value="off">OFF</option>
+          </select>
+        </label>
+      </div>
+
+      <!-- LOGO INFERIOR (mobile/tablet) -->
+      <img src="assets/logo.png" alt="Logo HORIZONTE" class="logo-bottom mobile-only" id="logoBottom" />
+    </section>
+
+    <footer class="footer">
+      <small id="buildInfo">v1.9.0_m1 • atualizado em --/--/---- • desenvolvido por Vinicius Simões</small>
+    </footer>
+  </main>
 </body>
 </html>
