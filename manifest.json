@@ -1,8 +1,8 @@
 {
   "name": "HORIZONTE JIU JITSU • TIMER",
   "short_name": "HORIZONTE TIMER",
-  "version": "1.9.0",
-  "description": "Cronômetro interativo para treinos de Jiu-Jitsu, com múltiplos rounds, intervalos, sons e temas, otimizado para TV, desktop e dispositivos móveis.",
+  "version": "1.9.2",
+  "description": "Cronômetro interativo de Jiu-Jitsu com múltiplos rounds, sons e modo foco, otimizado para TV, desktop e mobile.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

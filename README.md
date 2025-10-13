@@ -82,6 +82,22 @@ Atalhos (quando disponíveis):
 
 ## 🧾 Histórico de versões
 
+- **v1.9.2**
+  - 🧭 **Modo foco (PC/TV):** visíveis apenas **Hora**, **display do cronômetro**, **PAUSAR/RETOMAR** e **PARAR** (lado a lado) e **logo à direita**, alinhada ao display.
+  - 📱 **Modo foco (mobile/tablet):** os dois botões ficam **em coluna** (vertical).
+  - 🖥️ **Display estático no foco:** largura/altura **fixas responsivas** (sem “pular” quando o número muda); ocupa o máximo sem ultrapassar as margens.
+  - 🏷️ **Título** centralizado em todas as telas.
+  - 🔒 Integridade total das versões anteriores preservada.
+
+- **v1.9.1**
+  - 🧭 Correção do **modo foco**:
+    - Foco agora é aplicado também ao **retomar** (resume).
+    - Oculta áreas de configuração e centraliza cronômetro + botões.
+    - Em mobile/tablet: layout 100% vertical, sem overflow lateral.
+  - 🖼️ **Sombreamento branco** reativado nas logos do mobile (topo e rodapé).
+  - 🧱 Título centralizado no mobile e margens ajustadas.
+  - 🔒 Integridade total das versões anteriores preservada.
+
 - **v1.9.0_m1**
   - 📲 Manifest atualizado:
     - `description` descrevendo o app (não a versão).

@@ -1,5 +1,6 @@
-// ===== HORIZONTE JIU JITSU • TIMER — v1.9.0_m1 =====
-
+// ===== HORIZONTE JIU JITSU • TIMER — v1.9.2 =====
+// Correções pontuais: foco mostra HORA + DISPLAY + (PAUSAR/RETOMAR & PARAR) + LOGO à direita (PC/TV),
+// botões em coluna no mobile; display em foco com largura/altura fixas responsivas (sem “pular”).
 (() => {
   'use strict';
 
@@ -31,18 +32,18 @@
     const dd = String(now.getDate()).padStart(2,'0');
     const mm = String(now.getMonth()+1).padStart(2,'0');
     const yyyy = now.getFullYear();
-    buildInfo.textContent = `v1.9.0_m1 • atualizado em ${dd}/${mm}/${yyyy} • desenvolvido por Vinicius Simões`;
+    buildInfo.textContent = `v1.9.2 • atualizado em ${dd}/${mm}/${yyyy} • desenvolvido por Vinicius Simões`;
   }
 
-  // ---- Data/Hora (ativo para desktop/TV; oculto por CSS no mobile/tablet)
+  // ---- Data/Hora (desktop/TV; em mobile fica oculto via CSS)
   function updateDateTime(){
     const now = new Date();
     const dias = ['domingo','segunda','terça','quarta','quinta','sexta','sábado'];
     const dd = String(now.getDate()).padStart(2,'0');
     const mm = String(now.getMonth()+1).padStart(2,'0');
     const yyyy = now.getFullYear();
-    dateText.textContent = `Data: ${dd}/${mm}/${yyyy} (${dias[now.getDay()]})`;
-    timeText.textContent = `Hora: ${now.toLocaleTimeString('pt-BR', { hour12:false })}`;
+    if (dateText) dateText.textContent = `Data: ${dd}/${mm}/${yyyy} (${dias[now.getDay()]})`;
+    if (timeText) timeText.textContent = `Hora: ${now.toLocaleTimeString('pt-BR', { hour12:false })}`;
   }
   setInterval(updateDateTime, 250); updateDateTime();
 
@@ -70,15 +71,23 @@
     click: new Audio('assets/click.mp3')
   };
   Object.values(sounds).forEach(a => { a.preload = 'auto'; a.volume = 0.9; });
-  function getActiveSoundSelect(){ return (window.matchMedia('(max-width: 1024px)').matches ? soundSelectMobile : soundSelect); }
+
+  function getActiveSoundSelect(){
+    return (window.matchMedia('(max-width: 1024px)').matches ? soundSelectMobile : soundSelect);
+  }
   function play(name){
     const on = (getActiveSoundSelect()?.value ?? 'on') === 'on';
     if(!on) return;
     const a = sounds[name]; if(!a) return;
     try { a.currentTime = 0; a.play(); } catch(e){}
   }
-  function unlockAudio(){ Object.values(sounds).forEach(a => a.play().then(()=>{ a.pause(); a.currentTime = 0; }).catch(()=>{})); window.removeEventListener('pointerdown', unlockAudio); window.removeEventListener('keydown', unlockAudio); }
-  window.addEventListener('pointerdown', unlockAudio, { once:true }); window.addEventListener('keydown', unlockAudio, { once:true });
+  function unlockAudio(){
+    Object.values(sounds).forEach(a => a.play().then(()=>{ a.pause(); a.currentTime = 0; }).catch(()=>{}));
+    window.removeEventListener('pointerdown', unlockAudio);
+    window.removeEventListener('keydown', unlockAudio);
+  }
+  window.addEventListener('pointerdown', unlockAudio, { once:true });
+  window.addEventListener('keydown', unlockAudio, { once:true });
   soundTestBtn.addEventListener('click', ()=>{ play('click'); setTimeout(()=>play('tick'), 120); setTimeout(()=>play('gong'), 340); });
 
   // ---- Tema e persistência
@@ -157,7 +166,7 @@
   let phase = 'idle'; // idle | prep | round | rest
   let remain = cfg.roundSeconds, currentRound = 1;
 
-  // Garante preparação antes do 1º round (se configurada)
+  // Garante preparação inicial somente antes do 1º round
   let initialPrepPending = false;
 
   // ---- Utilitários UI
@@ -265,13 +274,12 @@
   // ---- Iniciar / Pausar / Retomar / Parar / Reset
   function start(){
     if (running) return;
-
     syncCfgFromSelects();
     lastTick = null; lastWhole = null;
     currentRound = 1;
     initialPrepPending = cfg.prepSeconds > 0;
 
-    enterFocus();
+    enterFocus(); // foco ao iniciar
     if (initialPrepPending) enterPhase('prep'); else enterPhase('round');
 
     running = true;
@@ -292,7 +300,9 @@
   function resume(){
     if(running) return;
     running = true;
-    setStateAttr(phase); setButtonsForState();
+    setStateAttr(phase);
+    enterFocus(); // foco ao retomar
+    setButtonsForState();
     requestAnimationFrame(engine);
     startPauseBtn.innerHTML = '<strong>PAUSAR</strong>';
   }
@@ -360,9 +370,9 @@
     navigator.serviceWorker.register('./service-worker.js').catch(()=>{});
   }
 
-  // ---- Splash: bloqueio total de rolagem e clique até desaparecer
-  setTimeout(()=> { document.getElementById('splash').classList.add('hidden'); document.body.classList.remove('splashing'); }, 5000);
+  // ---- Splash
+  setTimeout(()=> { splash.classList.add('hidden'); document.body.classList.remove('splashing'); }, 5000);
 
-  // ---- Inicialização (exibição inicial coerente)
+  // ---- Inicialização
   apply();
 })();
