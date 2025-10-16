@@ -82,6 +82,12 @@ Atalhos (quando disponíveis):
 
 ## 🧾 Histórico de versões
 
+- **v1.9.3 (mobileFocusFix)**
+  - 📱 **Foco (mobile/tablet):** visíveis só o **display** + **PAUSAR/RETOMAR** e **PARAR** (em coluna); **logo abaixo** do display; sem sobreposição; sem overflow lateral.
+  - 🖥️ **Foco (PC/TV):** visíveis **Hora**, **display** maior e **estático**, **PAUSAR/RETOMAR** e **PARAR** (lado a lado) e **logo à direita** alinhada ao display.
+  - ⏱️ **Display fixo no foco:** largura/altura **clamp** estáveis — o cronômetro não “pula” quando mudam os dígitos.
+  - 🔒 Integridade total preservada; sem alterações de lógica/sons/temas/PWA.
+
 - **v1.9.2**
   - 🧭 **Modo foco (PC/TV):** visíveis apenas **Hora**, **display do cronômetro**, **PAUSAR/RETOMAR** e **PARAR** (lado a lado) e **logo à direita**, alinhada ao display.
   - 📱 **Modo foco (mobile/tablet):** os dois botões ficam **em coluna** (vertical).

@@ -1,5 +1,5 @@
-// HORIZONTE JIU JITSU • TIMER — Service Worker v1.9.2
-const CACHE_NAME = 'bjj_timer_v1_9_2';
+// HORIZONTE JIU JITSU • TIMER — Service Worker v1.9.3
+const CACHE_NAME = 'bjj_timer_v1_9_3';
 
 const ASSETS = [
   './',

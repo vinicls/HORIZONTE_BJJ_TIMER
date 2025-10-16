@@ -1,6 +1,7 @@
-// ===== HORIZONTE JIU JITSU • TIMER — v1.9.2 =====
-// Correções pontuais: foco mostra HORA + DISPLAY + (PAUSAR/RETOMAR & PARAR) + LOGO à direita (PC/TV),
-// botões em coluna no mobile; display em foco com largura/altura fixas responsivas (sem “pular”).
+// ===== HORIZONTE JIU JITSU • TIMER — v1.9.3 =====
+// Correção de foco (mobile e PC/TV) com display estático em foco.
+// Restante do app inalterado.
+
 (() => {
   'use strict';
 
@@ -32,10 +33,10 @@
     const dd = String(now.getDate()).padStart(2,'0');
     const mm = String(now.getMonth()+1).padStart(2,'0');
     const yyyy = now.getFullYear();
-    buildInfo.textContent = `v1.9.2 • atualizado em ${dd}/${mm}/${yyyy} • desenvolvido por Vinicius Simões`;
+    buildInfo.textContent = `v1.9.3 • atualizado em ${dd}/${mm}/${yyyy} • desenvolvido por Vinicius Simões`;
   }
 
-  // ---- Data/Hora (desktop/TV; em mobile fica oculto via CSS)
+  // ---- Data/Hora
   function updateDateTime(){
     const now = new Date();
     const dias = ['domingo','segunda','terça','quarta','quinta','sexta','sábado'];
@@ -166,7 +167,7 @@
   let phase = 'idle'; // idle | prep | round | rest
   let remain = cfg.roundSeconds, currentRound = 1;
 
-  // Garante preparação inicial somente antes do 1º round
+  // Preparação apenas antes do 1º round
   let initialPrepPending = false;
 
   // ---- Utilitários UI
@@ -238,7 +239,7 @@
         nextStepAfterRoundEnd();
       } else if (phase === 'rest'){
         currentRound++;
-        enterPhase('round'); // nunca volta para prep entre rounds
+        enterPhase('round');
       }
       if (!running){ render(); return; }
     }
@@ -274,9 +275,9 @@
   // ---- Iniciar / Pausar / Retomar / Parar / Reset
   function start(){
     if (running) return;
+
     syncCfgFromSelects();
-    lastTick = null; lastWhole = null;
-    currentRound = 1;
+    lastTick = null; lastWhole = null; currentRound = 1;
     initialPrepPending = cfg.prepSeconds > 0;
 
     enterFocus(); // foco ao iniciar
@@ -347,22 +348,48 @@
 
   // ---- Listeners
   applyBtn.addEventListener('click', apply);
-  startPauseBtn.addEventListener('click', () => { if (running) { pause(); } else { if (phase === 'idle') start(); else resume(); } });
-  stopBtn.addEventListener('click', () => { play('click'); if (confirm('Parar e voltar à tela principal?')) { stopToIdle(); exitFocus(); } });
+  startPauseBtn.addEventListener('click', () => {
+    if (running) { pause(); }
+    else { if (phase === 'idle') start(); else resume(); }
+  });
+  stopBtn.addEventListener('click', () => {
+    play('click');
+    if (confirm('Parar e voltar à tela principal?')) { stopToIdle(); exitFocus(); }
+  });
   resetBtn.addEventListener('click', () => {
     if (phase !== 'idle') return;
     if (confirm('RESET: restaurar configuração padrão (1 round, 5:00, sem preparação, tema Horizon, sons ON) e salvar?')) {
       play('click'); applyDefaultsAndSave();
     }
   });
-  roundsSelect.addEventListener('change', () => { restSelect.disabled = (Number(roundsSelect.value) <= 1); });
+  roundsSelect.addEventListener('change', () => {
+    restSelect.disabled = (Number(roundsSelect.value) <= 1);
+  });
 
   window.addEventListener('keydown', (e) => {
     const code = e.code || e.key;
-    if (code === 'Enter' || code === 'NumpadEnter' || code === 'MediaPlayPause'){ e.preventDefault(); if (running) { pause(); } else { if (phase === 'idle') start(); else resume(); } return; }
-    if (code === 'Backspace' || code === 'Escape'){ e.preventDefault(); if (confirm('Parar e voltar à tela principal?')) { stopToIdle(); exitFocus(); } return; }
-    if (/^Digit[1-5]$/.test(code)){ const n = Number(code.replace('Digit','')); roundsSelect.value = String(n); restSelect.disabled = (n <= 1); return; }
-    if (code === 'Digit0'){ const sel = getActiveSoundSelect(); sel.value = (sel.value === 'on') ? 'off' : 'on'; saveSettings({ soundOn: sel.value === 'on' }); return; }
+    if (code === 'Enter' || code === 'NumpadEnter' || code === 'MediaPlayPause'){
+      e.preventDefault();
+      if (running) { pause(); } else { if (phase === 'idle') start(); else resume(); }
+      return;
+    }
+    if (code === 'Backspace' || code === 'Escape'){
+      e.preventDefault();
+      if (confirm('Parar e voltar à tela principal?')) { stopToIdle(); exitFocus(); }
+      return;
+    }
+    if (/^Digit[1-5]$/.test(code)){
+      const n = Number(code.replace('Digit',''));
+      roundsSelect.value = String(n);
+      restSelect.disabled = (n <= 1);
+      return;
+    }
+    if (code === 'Digit0'){
+      const sel = getActiveSoundSelect();
+      sel.value = (sel.value === 'on') ? 'off' : 'on';
+      saveSettings({ soundOn: sel.value === 'on' });
+      return;
+    }
   }, {passive:false});
 
   // ---- PWA
