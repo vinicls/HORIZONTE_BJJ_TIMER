@@ -1,405 +1,341 @@
-// ===== HORIZONTE JIU JITSU • TIMER — v1.9.3 =====
-// Correção de foco (mobile e PC/TV) com display estático em foco.
-// Restante do app inalterado.
+/* =========================================================
+   HORIZONTE JIU JITSU • TIMER
+   Versão: 1.9.4
+   Alterações: Som appintroboom.mp3 no splash + atualização de versão
+   ========================================================= */
 
 (() => {
-  'use strict';
+  "use strict";
 
-  // ---- Elementos principais
-  const display        = document.getElementById('countdownDisplay');
-  const statusPanel    = document.getElementById('statusPanel');
-  const prepSelect     = document.getElementById('prepSelect');
-  const minutesSelect  = document.getElementById('minutesSelect');
-  const secondsSelect  = document.getElementById('secondsSelect');
-  const roundsSelect   = document.getElementById('roundsSelect');
-  const restSelect     = document.getElementById('restSelect');
-  const applyBtn       = document.getElementById('applyBtn');
-  const startPauseBtn  = document.getElementById('startPauseBtn');
-  const stopBtn        = document.getElementById('stopBtn');
-  const resetBtn       = document.getElementById('resetBtn');
-  const soundTestBtn   = document.getElementById('soundTestBtn');
-  const dateText       = document.getElementById('dateText');
-  const timeText       = document.getElementById('timeText');
-  const themeSelect    = document.getElementById('themeSelect');
-  const soundSelect    = document.getElementById('soundSelect');
-  const themeSelectMobile = document.getElementById('themeSelectMobile');
-  const soundSelectMobile = document.getElementById('soundSelectMobile');
-  const splash         = document.getElementById('splash');
-  const buildInfo      = document.getElementById('buildInfo');
+  /* --------------------------
+     ELEMENTOS GLOBAIS
+  --------------------------- */
+  const splash = document.getElementById("splash");
+  const introSound = document.getElementById("appIntroSound");
+  const buildInfo = document.getElementById("buildInfo");
+  const countdownDisplay = document.getElementById("countdownDisplay");
+  const statusPanel = document.getElementById("statusPanel");
+  const startPauseBtn = document.getElementById("startPauseBtn");
+  const stopBtn = document.getElementById("stopBtn");
+  const resetBtn = document.getElementById("resetBtn");
+  const soundTestBtn = document.getElementById("soundTestBtn");
+  const applyBtn = document.getElementById("applyBtn");
+  const prepSelect = document.getElementById("prepSelect");
+  const minutesSelect = document.getElementById("minutesSelect");
+  const secondsSelect = document.getElementById("secondsSelect");
+  const roundsSelect = document.getElementById("roundsSelect");
+  const restSelect = document.getElementById("restSelect");
+  const themeSelect = document.getElementById("themeSelect");
+  const soundSelect = document.getElementById("soundSelect");
+  const themeSelectMobile = document.getElementById("themeSelectMobile");
+  const soundSelectMobile = document.getElementById("soundSelectMobile");
+  const timeText = document.getElementById("timeText");
+  const dateText = document.getElementById("dateText");
 
-  // ---- Versão / Rodapé
+  /* --------------------------
+     ÁUDIOS
+  --------------------------- */
+  const sounds = {
+    beep: new Audio("assets/beep.mp3"),
+    click: new Audio("assets/click.mp3"),
+    fight: new Audio("assets/fight.mp3"),
+    gong: new Audio("assets/gong.mp3"),
+    endrest: new Audio("assets/end_rest.mp3")
+  };
+
+  Object.values(sounds).forEach(a => {
+    a.preload = "auto";
+    a.volume = 0.8;
+  });
+
+  /* --------------------------
+     VARIÁVEIS DE ESTADO
+  --------------------------- */
+  let timer = null;
+  let remaining = 0;
+  let round = 1;
+  let totalRounds = 1;
+  let restTime = 0;
+  let prepTime = 0;
+  let state = "idle"; // idle | running | paused | rest | prep | finished
+  let soundEnabled = true;
+  let focusMode = false;
+
+  /* --------------------------
+     SPLASH + SOM INTRODUTÓRIO
+  --------------------------- */
+  if (introSound) {
+    try {
+      setTimeout(() => {
+        introSound.currentTime = 0;
+        introSound.play().catch(() => {});
+      }, 200);
+    } catch (e) {}
+  }
+
+  setTimeout(() => {
+    splash.classList.add("hidden");
+    document.body.classList.remove("splashing");
+  }, 5000);
+
+  /* --------------------------
+     DATA E HORA
+  --------------------------- */
+  function updateDateTime() {
+    const now = new Date();
+    dateText.textContent = now.toLocaleDateString("pt-BR");
+    timeText.textContent = now.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  }
+  setInterval(updateDateTime, 1000);
+  updateDateTime();
+
+  /* --------------------------
+     FUNÇÕES UTILITÁRIAS
+  --------------------------- */
+  function playSound(name) {
+    if (!soundEnabled) return;
+    const s = sounds[name];
+    if (s) {
+      s.currentTime = 0;
+      s.play().catch(() => {});
+    }
+  }
+
+  function formatTime(sec) {
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+  }
+
+  function resetDisplayColor() {
+    countdownDisplay.style.color = "";
+    countdownDisplay.style.animation = "none";
+  }
+
+  function blink(color, times = 3, speed = 300) {
+    let i = 0;
+    const interval = setInterval(() => {
+      countdownDisplay.style.color = i % 2 === 0 ? color : "";
+      if (++i > times * 2) clearInterval(interval);
+    }, speed);
+  }
+
+  /* --------------------------
+     TEMAS E SONS
+  --------------------------- */
+  function applyTheme(value) {
+    document.documentElement.dataset.theme = value;
+    localStorage.setItem("theme", value);
+  }
+
+  function applySoundState(value) {
+    soundEnabled = value === "on";
+    localStorage.setItem("sound", value);
+  }
+
+  themeSelect.addEventListener("change", e => {
+    applyTheme(e.target.value);
+    themeSelectMobile.value = e.target.value;
+  });
+  themeSelectMobile.addEventListener("change", e => {
+    applyTheme(e.target.value);
+    themeSelect.value = e.target.value;
+  });
+
+  soundSelect.addEventListener("change", e => {
+    applySoundState(e.target.value);
+    soundSelectMobile.value = e.target.value;
+  });
+  soundSelectMobile.addEventListener("change", e => {
+    applySoundState(e.target.value);
+    soundSelect.value = e.target.value;
+  });
+
+  /* --------------------------
+     INICIALIZAÇÃO DE PREFERÊNCIAS
+  --------------------------- */
+  const savedTheme = localStorage.getItem("theme") || "horizon";
+  const savedSound = localStorage.getItem("sound") || "on";
+  themeSelect.value = themeSelectMobile.value = savedTheme;
+  soundSelect.value = soundSelectMobile.value = savedSound;
+  applyTheme(savedTheme);
+  applySoundState(savedSound);
+
+  /* --------------------------
+     FUNÇÕES DE CONTROLE DO TIMER
+  --------------------------- */
+  function updateDisplay() {
+    countdownDisplay.textContent = formatTime(remaining);
+  }
+
+  function stopTimer() {
+    if (timer) clearInterval(timer);
+    timer = null;
+  }
+
+  function startCountdown(duration, nextState) {
+    remaining = duration;
+    updateDisplay();
+    stopTimer();
+    state = nextState;
+    timer = setInterval(() => {
+      remaining--;
+      updateDisplay();
+
+      // últimos segundos
+      if (remaining <= 3 && remaining > 0) {
+        countdownDisplay.style.color = "#ef4444";
+        countdownDisplay.style.animation = "blink 0.8s step-end infinite";
+        playSound("beep");
+      }
+
+      if (remaining <= 0) {
+        stopTimer();
+        countdownDisplay.style.animation = "none";
+
+        if (state === "prep") {
+          playSound("fight");
+          startRound();
+        } else if (state === "running") {
+          playSound("gong");
+          if (round < totalRounds) {
+            startRest();
+          } else {
+            finishAll();
+          }
+        } else if (state === "rest") {
+          playSound("endrest");
+          round++;
+          startRound();
+        }
+      }
+    }, 1000);
+  }
+
+  function startPrep() {
+    state = "prep";
+    statusPanel.textContent = "PREPARAÇÃO";
+    countdownDisplay.style.color = "#f59e0b";
+    startCountdown(prepTime, "prep");
+  }
+
+  function startRound() {
+    state = "running";
+    countdownDisplay.style.color = "#22c55e";
+    statusPanel.textContent = `ROUND ${round}/${totalRounds}`;
+    startCountdown(currentRoundTime, "running");
+  }
+
+  function startRest() {
+    state = "rest";
+    countdownDisplay.style.color = "#9aa5b1";
+    statusPanel.textContent = "DESCANSO";
+    startCountdown(restTime, "rest");
+  }
+
+  function finishAll() {
+    state = "finished";
+    countdownDisplay.style.color = "#ef4444";
+    statusPanel.textContent = "FIM DO TREINO";
+    playSound("gong");
+  }
+
+  function pauseTimer() {
+    stopTimer();
+    state = "paused";
+    countdownDisplay.style.color = "#eab308";
+  }
+
+  function resumeTimer() {
+    if (state === "paused") {
+      startCountdown(remaining, "running");
+      countdownDisplay.style.color = "#22c55e";
+    }
+  }
+
+  function resetAll(confirmReset = true) {
+    if (confirmReset && !confirm("Deseja realmente redefinir o cronômetro?")) return;
+    stopTimer();
+    state = "idle";
+    round = 1;
+    remaining = 0;
+    countdownDisplay.textContent = "00:00";
+    resetDisplayColor();
+    statusPanel.textContent = "ROUND 1/1 • PAUSADO";
+    document.body.classList.remove("focus");
+  }
+
+  /* --------------------------
+     EVENTOS DE CONTROLE
+  --------------------------- */
+  applyBtn.addEventListener("click", () => {
+    playSound("click");
+    const m = parseInt(minutesSelect.value);
+    const s = parseInt(secondsSelect.value);
+    const total = m * 60 + s;
+    prepTime = parseInt(prepSelect.value);
+    totalRounds = parseInt(roundsSelect.value);
+    restTime = parseInt(restSelect.value);
+    currentRoundTime = total;
+    resetAll(false);
+    alert("Configuração definida!");
+  });
+
+  startPauseBtn.addEventListener("click", () => {
+    playSound("click");
+    if (state === "idle") {
+      document.body.classList.add("focus");
+      if (prepTime > 0) startPrep();
+      else startRound();
+      startPauseBtn.textContent = "PAUSAR";
+      return;
+    }
+    if (state === "running") {
+      pauseTimer();
+      startPauseBtn.textContent = "RETOMAR";
+      return;
+    }
+    if (state === "paused") {
+      resumeTimer();
+      startPauseBtn.textContent = "PAUSAR";
+      return;
+    }
+  });
+
+  stopBtn.addEventListener("click", () => {
+    playSound("click");
+    if (confirm("Deseja parar o treino atual?")) {
+      resetAll(false);
+      startPauseBtn.textContent = "INICIAR";
+    }
+  });
+
+  resetBtn.addEventListener("click", () => {
+    playSound("click");
+    resetAll(true);
+    startPauseBtn.textContent = "INICIAR";
+  });
+
+  soundTestBtn.addEventListener("click", () => {
+    playSound("beep");
+  });
+
+  /* --------------------------
+     RODAPÉ DE VERSÃO
+  --------------------------- */
   if (buildInfo) {
     const now = new Date();
-    const dd = String(now.getDate()).padStart(2,'0');
-    const mm = String(now.getMonth()+1).padStart(2,'0');
-    const yyyy = now.getFullYear();
-    buildInfo.textContent = `v1.9.3 • atualizado em ${dd}/${mm}/${yyyy} • desenvolvido por Vinicius Simões`;
+    buildInfo.textContent = `v1.9.4 • atualizado em ${now.toLocaleDateString("pt-BR")} • desenvolvido por Vinicius Simões`;
   }
 
-  // ---- Data/Hora
-  function updateDateTime(){
-    const now = new Date();
-    const dias = ['domingo','segunda','terça','quarta','quinta','sexta','sábado'];
-    const dd = String(now.getDate()).padStart(2,'0');
-    const mm = String(now.getMonth()+1).padStart(2,'0');
-    const yyyy = now.getFullYear();
-    if (dateText) dateText.textContent = `Data: ${dd}/${mm}/${yyyy} (${dias[now.getDay()]})`;
-    if (timeText) timeText.textContent = `Hora: ${now.toLocaleTimeString('pt-BR', { hour12:false })}`;
-  }
-  setInterval(updateDateTime, 250); updateDateTime();
-
-  // ---- Detecção simples de dispositivo
-  function getDeviceClass(){
-    const mm = window.matchMedia;
-    const coarse = mm && mm('(pointer:coarse)').matches;
-    const noHover = mm && mm('(hover: none)').matches;
-    const sw = window.screen?.width || window.innerWidth;
-    const sh = window.screen?.height || window.innerHeight;
-    const ua = navigator.userAgent || '';
-    const isTVUA = /Tizen|SMART-TV|SmartTV|Web0S|WebOS|NetCast|HbbTV/i.test(ua);
-    if (isTVUA || (noHover && sw>=1280 && sh>=720)) return 'tv';
-    if (coarse && !isTVUA) return 'mobile';
-    return 'desktop';
-  }
-  function applyDeviceClass(){ document.body.setAttribute('data-device', getDeviceClass()); }
-  applyDeviceClass(); window.addEventListener('resize', applyDeviceClass);
-
-  // ---- Sons
-  const sounds = {
-    tick : new Audio('assets/beep.mp3'),
-    fight: new Audio('assets/fight.mp3'),
-    gong : new Audio('assets/gong.mp3'),
-    click: new Audio('assets/click.mp3')
-  };
-  Object.values(sounds).forEach(a => { a.preload = 'auto'; a.volume = 0.9; });
-
-  function getActiveSoundSelect(){
-    return (window.matchMedia('(max-width: 1024px)').matches ? soundSelectMobile : soundSelect);
-  }
-  function play(name){
-    const on = (getActiveSoundSelect()?.value ?? 'on') === 'on';
-    if(!on) return;
-    const a = sounds[name]; if(!a) return;
-    try { a.currentTime = 0; a.play(); } catch(e){}
-  }
-  function unlockAudio(){
-    Object.values(sounds).forEach(a => a.play().then(()=>{ a.pause(); a.currentTime = 0; }).catch(()=>{}));
-    window.removeEventListener('pointerdown', unlockAudio);
-    window.removeEventListener('keydown', unlockAudio);
-  }
-  window.addEventListener('pointerdown', unlockAudio, { once:true });
-  window.addEventListener('keydown', unlockAudio, { once:true });
-  soundTestBtn.addEventListener('click', ()=>{ play('click'); setTimeout(()=>play('tick'), 120); setTimeout(()=>play('gong'), 340); });
-
-  // ---- Tema e persistência
-  function applyTheme(value){
-    if(value === 'classico' || value === 'claro' || value === 'estados') document.documentElement.setAttribute('data-theme', value);
-    else document.documentElement.setAttribute('data-theme', 'horizon');
-    localStorage.setItem('bjj_timer_theme', value);
-  }
-  function getActiveThemeSelect(){ return (window.matchMedia('(max-width: 1024px)').matches ? themeSelectMobile : themeSelect); }
-
-  function syncThemeSelects(value){
-    if (themeSelect) themeSelect.value = value;
-    if (themeSelectMobile) themeSelectMobile.value = value;
-    applyTheme(value);
-  }
-  function syncSoundSelects(value){
-    if (soundSelect) soundSelect.value = value;
-    if (soundSelectMobile) soundSelectMobile.value = value;
-    saveSettings({ soundOn: value === 'on' });
-  }
-
-  if (themeSelect) themeSelect.addEventListener('change', e => syncThemeSelects(e.target.value));
-  if (themeSelectMobile) themeSelectMobile.addEventListener('change', e => syncThemeSelects(e.target.value));
-  if (soundSelect) soundSelect.addEventListener('change', e => syncSoundSelects(e.target.value));
-  if (soundSelectMobile) soundSelectMobile.addEventListener('change', e => syncSoundSelects(e.target.value));
-
-  const SETTINGS_KEY = 'bjj_timer_settings';
-  function saveSettings(partial){
-    try{
-      const current = loadSettings() || {};
-      const merged = { version: '1.0', ...current, ...partial };
-      localStorage.setItem(SETTINGS_KEY, JSON.stringify(merged));
-    }catch(e){}
-  }
-  function loadSettings(){
-    try{
-      const raw = localStorage.getItem(SETTINGS_KEY);
-      if(!raw) return null;
-      const obj = JSON.parse(raw);
-      const valid = {};
-      valid.version = '1.0';
-      valid.prepSeconds  = [0,5,10].includes(+obj.prepSeconds) ? +obj.prepSeconds : 0;
-      valid.roundMinutes = (Number.isFinite(+obj.roundMinutes) && +obj.roundMinutes>=0 && +obj.roundMinutes<=10) ? +obj.roundMinutes : 5;
-      valid.roundSeconds = [0,15,30,45].includes(+obj.roundSeconds) ? +obj.roundSeconds : 0;
-      valid.rounds       = [1,2,3,4,5].includes(+obj.rounds) ? +obj.rounds : 1;
-      valid.restSeconds  = [10,20,30,40,50,60].includes(+obj.restSeconds) ? +obj.restSeconds : 30;
-      valid.theme        = ['horizon','classico','claro','estados'].includes(obj.theme) ? obj.theme : 'horizon';
-      valid.soundOn      = (obj.soundOn === false) ? false : true;
-      return valid;
-    }catch(e){ return null; }
-  }
-
-  const cached = loadSettings();
-  const themeSaved = (cached && cached.theme) || localStorage.getItem('bjj_timer_theme') || 'horizon';
-  syncThemeSelects(themeSaved);
-
-  if (cached){
-    prepSelect.value    = String(cached.prepSeconds);
-    minutesSelect.value = String(cached.roundMinutes);
-    secondsSelect.value = String(cached.roundSeconds);
-    roundsSelect.value  = String(cached.rounds);
-    restSelect.value    = String(cached.restSeconds);
-    syncSoundSelects(cached.soundOn ? 'on' : 'off');
-  } else {
-    syncSoundSelects('on');
-  }
-
-  // ---- Estado do timer
-  let cfg = {
-    prepSeconds: Number(prepSelect.value),
-    roundSeconds: (Number(minutesSelect.value)*60)+Number(secondsSelect.value),
-    rounds: Number(roundsSelect.value),
-    restSeconds: Number(restSelect.value)
-  };
-  let running = false, lastTick = null, lastWhole = null;
-  let phase = 'idle'; // idle | prep | round | rest
-  let remain = cfg.roundSeconds, currentRound = 1;
-
-  // Preparação apenas antes do 1º round
-  let initialPrepPending = false;
-
-  // ---- Utilitários UI
-  const fmt = (sec) => { const s = Math.max(0, Math.floor(sec)); const m = Math.floor(s/60); const ss = s % 60; return `${String(m).padStart(2,'0')}:${String(ss).padStart(2,'0')}`; };
-  const setStateAttr = (v) => document.body.setAttribute('data-state', v);
-  const render = () => { display.textContent = fmt(remain); };
-
-  const setDisplayWarning = (on) => { display.classList.toggle('final-warning', on); display.classList.toggle('flash-red', on); };
-  const setRestMode = (on) => { display.classList.toggle('rest-mode', on); };
-  const setRestWarning = (on) => { display.classList.toggle('rest-warning', on); display.classList.toggle('flash-amber', on); };
-
-  function statusText(){ if (phase === 'idle') return 'PAUSADO'; if (phase === 'prep') return 'PREPARAÇÃO'; if (phase === 'round') return 'EM EXECUÇÃO'; if (phase === 'rest') return 'DESCANSO'; return 'PAUSADO'; }
-  function updateStatusPanel(custom){ const base = custom || statusText(); statusPanel.textContent = `ROUND ${currentRound}/${cfg.rounds} • ${base}`; }
-
-  // ---- Modo foco
-  function enterFocus(){ document.body.classList.add('focus'); }
-  function exitFocus(){ document.body.classList.remove('focus'); }
-
-  // ---- Fases
-  function enterPhase(newPhase){
-    phase = newPhase; lastWhole = null;
-
-    if (phase === 'prep'){
-      remain = cfg.prepSeconds;
-      if (remain <= 0) return enterPhase('round');
-      setDisplayWarning(false); setRestWarning(false); setRestMode(false);
-      setStateAttr('prep'); updateStatusPanel('PREPARAÇÃO'); render();
-      return;
+  /* --------------------------
+     ANIMAÇÕES CSS
+  --------------------------- */
+  const style = document.createElement("style");
+  style.textContent = `
+    @keyframes blink {
+      50% { opacity: 0.4; }
     }
-    if (phase === 'round'){
-      remain = cfg.roundSeconds;
-      setDisplayWarning(false); setRestWarning(false); setRestMode(false);
-      setStateAttr('round'); updateStatusPanel('EM EXECUÇÃO'); play('fight'); render();
-      return;
-    }
-    if (phase === 'rest'){
-      remain = cfg.restSeconds;
-      setDisplayWarning(false); setRestWarning(false); setRestMode(true);
-      setStateAttr('rest'); updateStatusPanel('DESCANSO'); render();
-      return;
-    }
-  }
-
-  function nextStepAfterRoundEnd(){
-    play('gong');
-    if (currentRound < cfg.rounds){
-      if (cfg.restSeconds > 0){ enterPhase('rest'); }
-      else { currentRound++; enterPhase('round'); }
-    } else { finishTraining(); }
-  }
-
-  function perSecondCue(){
-    if (phase === 'prep'){ play('tick'); return; }
-    if (phase === 'rest' && remain > 0 && remain <= 10){ play('tick'); updateStatusPanel('PREPARAR!'); return; }
-    if (phase === 'round' && remain > 0 && remain <= 3){ play('tick'); }
-  }
-
-  function engine(ts){
-    if(!running) return;
-    if(lastTick == null){ lastTick = ts; lastWhole = Math.floor(remain); }
-    const dt = (ts - lastTick) / 1000; lastTick = ts;
-    remain -= dt;
-
-    if (remain <= 0){
-      if (phase === 'prep'){
-        initialPrepPending = false;
-        enterPhase('round');
-      } else if (phase === 'round'){
-        nextStepAfterRoundEnd();
-      } else if (phase === 'rest'){
-        currentRound++;
-        enterPhase('round');
-      }
-      if (!running){ render(); return; }
-    }
-
-    const warnRound = (phase === 'round' && remain > 0 && remain <= 3); setDisplayWarning(warnRound);
-    const warnRest = (phase === 'rest' && remain > 0 && remain <= 10); setRestWarning(warnRest);
-
-    const nowWhole = Math.floor(remain);
-    if(nowWhole !== lastWhole){ perSecondCue(); lastWhole = nowWhole; }
-
-    render();
-    requestAnimationFrame(engine);
-  }
-
-  function setButtonsForState(){
-    applyBtn.disabled = running;
-    const isIdle = (phase === 'idle' && !running);
-    resetBtn.disabled = !isIdle;
-    restSelect.disabled = (Number(roundsSelect.value) <= 1);
-  }
-
-  function syncCfgFromSelects(){
-    const m = Number(minutesSelect.value || 0);
-    const s = Number(secondsSelect.value || 0);
-    cfg = {
-      prepSeconds: Number(prepSelect.value || 0),
-      roundSeconds: (m*60) + s,
-      rounds: Number(roundsSelect.value || 1),
-      restSeconds: Number(restSelect.value || 30)
-    };
-  }
-
-  // ---- Iniciar / Pausar / Retomar / Parar / Reset
-  function start(){
-    if (running) return;
-
-    syncCfgFromSelects();
-    lastTick = null; lastWhole = null; currentRound = 1;
-    initialPrepPending = cfg.prepSeconds > 0;
-
-    enterFocus(); // foco ao iniciar
-    if (initialPrepPending) enterPhase('prep'); else enterPhase('round');
-
-    running = true;
-    setButtonsForState();
-    requestAnimationFrame(engine);
-    startPauseBtn.innerHTML = '<strong>PAUSAR</strong>';
-  }
-
-  function pause(){
-    if(!running) return;
-    running = false;
-    setDisplayWarning(false); setRestWarning(false);
-    setStateAttr('paused'); updateStatusPanel('PAUSADO');
-    setButtonsForState();
-    startPauseBtn.innerHTML = '<strong>RETOMAR</strong>';
-  }
-
-  function resume(){
-    if(running) return;
-    running = true;
-    setStateAttr(phase);
-    enterFocus(); // foco ao retomar
-    setButtonsForState();
-    requestAnimationFrame(engine);
-    startPauseBtn.innerHTML = '<strong>PAUSAR</strong>';
-  }
-
-  function finishTraining(){ play('gong'); stopToIdle(); exitFocus(); }
-
-  function stopToIdle(){
-    running = false; phase = 'idle'; currentRound = 1; remain = cfg.roundSeconds;
-    initialPrepPending = false;
-    setDisplayWarning(false); setRestWarning(false); setRestMode(false);
-    setStateAttr('paused'); updateStatusPanel('PAUSADO'); render(); setButtonsForState();
-    startPauseBtn.innerHTML = '<strong>INICIAR</strong>';
-  }
-
-  function applyDefaultsAndSave(){
-    prepSelect.value = '0'; minutesSelect.value = '5'; secondsSelect.value = '0'; roundsSelect.value = '1'; restSelect.value = '30';
-    syncThemeSelects('horizon'); syncSoundSelects('on');
-    saveSettings({ prepSeconds:0, roundMinutes:5, roundSeconds:0, rounds:1, restSeconds:30, soundOn:true, theme:'horizon' });
-    restSelect.disabled = true;
-    cfg.prepSeconds = 0; cfg.roundSeconds = 5*60; cfg.rounds = 1; cfg.restSeconds = 30;
-    initialPrepPending = false; stopToIdle();
-  }
-
-  function apply(){
-    play('click');
-    const m = Number(minutesSelect.value || 0);
-    const s = Number(secondsSelect.value || 0);
-    cfg.prepSeconds = Number(prepSelect.value || 0);
-    cfg.roundSeconds = (m*60) + s;
-    cfg.rounds = Number(roundsSelect.value || 1);
-    cfg.restSeconds = Number(restSelect.value || 30);
-    saveSettings({
-      prepSeconds: cfg.prepSeconds,
-      roundMinutes: m, roundSeconds: s,
-      rounds: cfg.rounds, restSeconds: cfg.restSeconds,
-      soundOn: (getActiveSoundSelect().value === 'on'),
-      theme: getActiveThemeSelect().value
-    });
-    initialPrepPending = false;
-    stopToIdle();
-  }
-
-  // ---- Listeners
-  applyBtn.addEventListener('click', apply);
-  startPauseBtn.addEventListener('click', () => {
-    if (running) { pause(); }
-    else { if (phase === 'idle') start(); else resume(); }
-  });
-  stopBtn.addEventListener('click', () => {
-    play('click');
-    if (confirm('Parar e voltar à tela principal?')) { stopToIdle(); exitFocus(); }
-  });
-  resetBtn.addEventListener('click', () => {
-    if (phase !== 'idle') return;
-    if (confirm('RESET: restaurar configuração padrão (1 round, 5:00, sem preparação, tema Horizon, sons ON) e salvar?')) {
-      play('click'); applyDefaultsAndSave();
-    }
-  });
-  roundsSelect.addEventListener('change', () => {
-    restSelect.disabled = (Number(roundsSelect.value) <= 1);
-  });
-
-  window.addEventListener('keydown', (e) => {
-    const code = e.code || e.key;
-    if (code === 'Enter' || code === 'NumpadEnter' || code === 'MediaPlayPause'){
-      e.preventDefault();
-      if (running) { pause(); } else { if (phase === 'idle') start(); else resume(); }
-      return;
-    }
-    if (code === 'Backspace' || code === 'Escape'){
-      e.preventDefault();
-      if (confirm('Parar e voltar à tela principal?')) { stopToIdle(); exitFocus(); }
-      return;
-    }
-    if (/^Digit[1-5]$/.test(code)){
-      const n = Number(code.replace('Digit',''));
-      roundsSelect.value = String(n);
-      restSelect.disabled = (n <= 1);
-      return;
-    }
-    if (code === 'Digit0'){
-      const sel = getActiveSoundSelect();
-      sel.value = (sel.value === 'on') ? 'off' : 'on';
-      saveSettings({ soundOn: sel.value === 'on' });
-      return;
-    }
-  }, {passive:false});
-
-  // ---- PWA
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./service-worker.js').catch(()=>{});
-  }
-
-  // ---- Splash
-  setTimeout(()=> { splash.classList.add('hidden'); document.body.classList.remove('splashing'); }, 5000);
-
-  // ---- Inicialização
-  apply();
+  `;
+  document.head.appendChild(style);
 })();

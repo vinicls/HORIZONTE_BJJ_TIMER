@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>HORIZONTE JIU JITSU • TIMER — v1.9.3</title>
+  <title>HORIZONTE JIU JITSU • TIMER — v1.9.4</title>
 
   <!-- Ícones / PWA -->
   <link rel="icon" href="./favicon.ico" sizes="16x16 32x32 48x48 64x64 128x128 256x256">
@@ -20,28 +20,26 @@
   <!-- SPLASH -->
   <div id="splash" aria-label="Tela inicial com logo da equipe">
     <img src="assets/logo.png" alt="Logo HORIZONTE JIU JITSU" class="splash-logo" />
+    <audio id="appIntroSound" src="assets/appintroboom.mp3" preload="auto"></audio>
   </div>
 
   <main class="container">
-    <!-- Topo -->
     <header class="topbar">
       <div class="datetime">
         <div id="dateText" aria-live="polite"></div>
         <div id="timeText" aria-live="polite"></div>
       </div>
 
-      <!-- Título 2 linhas (mobile/tablet) -->
       <h1 class="brand" id="appTitle">
         <span class="line1">HORIZONTE JIU-JITSU</span><br class="mobile-break" />
         <span class="line2">• TIMER •</span>
       </h1>
 
-      <!-- Controles do topo (desktop/TV) -->
       <div class="right-side">
         <div class="top-controls">
           <label class="inline">
             <span>Tema</span>
-            <select id="themeSelect" aria-label="Selecionar tema">
+            <select id="themeSelect">
               <option value="horizon">Horizon (escuro)</option>
               <option value="classico">Clássico (escuro)</option>
               <option value="claro">Claro</option>
@@ -51,7 +49,7 @@
 
           <label class="inline">
             <span>Sons</span>
-            <select id="soundSelect" aria-label="Ativar sons">
+            <select id="soundSelect">
               <option value="on">ON</option>
               <option value="off">OFF</option>
             </select>
@@ -61,19 +59,15 @@
     </header>
 
     <section class="timer-section" id="timerSection">
-      <!-- LOGO SUPERIOR (mobile/tablet) -->
       <img src="assets/logo.png" alt="Logo HORIZONTE" class="logo-top mobile-only" id="logoTop" />
 
-      <!-- Painel Round / Status -->
       <div id="statusPanel" class="status-panel">ROUND 1/1 • PAUSADO</div>
 
-      <!-- Display + Logo lateral (PC/TV) -->
       <div class="display-wrap" id="displayWrap">
         <div class="display" id="countdownDisplay" aria-live="polite">00:00</div>
         <img src="assets/logo.png" alt="Logo HORIZONTE" class="logo-mark side desktop-only" id="logoMain" />
       </div>
 
-      <!-- Configurações -->
       <form id="setForm" class="set-form" onsubmit="return false">
         <label><strong>PREPARAÇÃO</strong>
           <select id="prepSelect">
@@ -125,7 +119,6 @@
         <button id="applyBtn" class="btn btn-define btn-lg btn-fixed btn-define-like-select" type="button"><strong>DEFINIR</strong></button>
       </form>
 
-      <!-- Controles -->
       <div class="controls" id="controls">
         <button id="startPauseBtn" class="btn primary btn-lg btn-fixed"><strong>INICIAR</strong></button>
         <button id="stopBtn" class="btn danger btn-lg btn-fixed"><strong>PARAR</strong></button>
@@ -133,7 +126,6 @@
         <button id="soundTestBtn" class="btn btn-lg btn-fixed"><strong>TESTAR SOM</strong></button>
       </div>
 
-      <!-- Seletores (mobile/tablet) -->
       <div class="mobile-bottom-selects mobile-only">
         <label class="inline">
           <span>Tema</span>
@@ -153,12 +145,11 @@
         </label>
       </div>
 
-      <!-- LOGO INFERIOR (mobile/tablet) -->
       <img src="assets/logo.png" alt="Logo HORIZONTE" class="logo-bottom mobile-only" id="logoBottom" />
     </section>
 
     <footer class="footer">
-      <small id="buildInfo">v1.9.3 • atualizado em --/--/---- • desenvolvido por Vinicius Simões</small>
+      <small id="buildInfo">v1.9.4 • atualizado em --/--/---- • desenvolvido por Vinicius Simões</small>
     </footer>
   </main>
 </body>

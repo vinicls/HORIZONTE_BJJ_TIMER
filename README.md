@@ -1,3 +1,5 @@
+<img src="assets/logo.png" alt="Logo Horizonte Jiu Jitsu" width="180"/>
+
 # 🥋 HORIZONTE JIU JITSU • TIMER
 
 Aplicativo de cronômetro interativo para treinos de Jiu-Jitsu, adaptado para **TV**, **desktop**, **mobile** e **tablet**, com **sons**, **temas**, **modo foco** e **PWA** (instalável). O app foi desenvolvido por Vinicius Simões para a equipe da HORIZONTE JIU JITSU, com sede na cidade de João Pessoa/PB e liderada pelo Professor Alexandre Wanderley, para a honra e glória de Nosso Senhor Jesus Cristo.
@@ -81,6 +83,11 @@ Atalhos (quando disponíveis):
 ---
 
 ## 🧾 Histórico de versões
+
+- **v1.9.4**
+  - 🔊 Adicionado som `appintroboom.mp3` na tela inicial (splash).  
+  - 🧩 Ajuste visual do modo foco (PC/TV): display ampliado e espaçamento refinado.  
+  - ⚙️ Atualização completa dos arquivos (`index`, `styles`, `script`, `manifest`, `service-worker`).  
 
 - **v1.9.3 (mobileFocusFix)**
   - 📱 **Foco (mobile/tablet):** visíveis só o **display** + **PAUSAR/RETOMAR** e **PARAR** (em coluna); **logo abaixo** do display; sem sobreposição; sem overflow lateral.
