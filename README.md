@@ -84,6 +84,23 @@ Atalhos (quando disponíveis):
 
 ## 🧾 Histórico de versões
 
+## 🧾 Histórico de versões
+
+- **v1.9.5.fix**
+  - 🎵 Adicionado som **appintroboom.mp3** na tela inicial (splash de 5s).
+  - 🚫 Bloqueio de rolagem durante o splash, impedindo visualização da tela de configuração antes do carregamento.
+  - 🖥️ Ajuste visual do **display no modo foco** (PC/TV), com proporções fixas e maior visibilidade.
+  - 📱 Layout mobile aprimorado:
+    - Título dividido em **duas linhas**, centralizado e em **CAIXA ALTA + negrito**.
+    - Logos superior e inferior com **sombreamento branco leve**.
+    - Botões empilhados e centralizados no modo foco.
+    - Ocultação da data/hora em telas pequenas.
+  - 🕓 Implementado **Wake Lock API**, mantendo a tela do dispositivo ligada durante a execução do cronômetro.
+  - 🧩 `manifest.json` atualizado com `"version": "1.9.5.fix"` e descrição aprimorada.
+  - 🧱 `service-worker.js` atualizado com novo `CACHE_NAME` e inclusão de `appintroboom.mp3` no cache.
+  - 📅 Rodapé atualizado com data estática “18/10/2025” e nome do desenvolvedor.
+  - 🔒 Mantida a integridade completa da versão **v1.9.3** como base estrutural.
+
 - **v1.9.4**
   - 🔊 Adicionado som `appintroboom.mp3` na tela inicial (splash).  
   - 🧩 Ajuste visual do modo foco (PC/TV): display ampliado e espaçamento refinado.  

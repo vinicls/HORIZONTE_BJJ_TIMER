@@ -3,11 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>HORIZONTE JIU JITSU • TIMER — v1.9.4</title>
+  <title>HORIZONTE JIU JITSU • TIMER — v1.9.5.fix</title>
 
-  <!-- Ícones / PWA -->
+  <!-- Ícones e PWA -->
   <link rel="icon" href="./favicon.ico" sizes="16x16 32x32 48x48 64x64 128x128 256x256">
-  <link rel="icon" type="image/png" href="./icon-256.png" sizes="256x256">
   <link rel="apple-touch-icon" href="./apple-touch-icon.png" sizes="180x180">
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#070a10" />
@@ -16,32 +15,33 @@
   <script defer src="script.js"></script>
 </head>
 
-<body data-state="paused" data-device="desktop" class="splashing">
-  <!-- SPLASH -->
-  <div id="splash" aria-label="Tela inicial com logo da equipe">
+<body data-state="paused" class="splashing">
+  <!-- SPLASH (tela inicial com som de introdução) -->
+  <div id="splash">
     <img src="assets/logo.png" alt="Logo HORIZONTE JIU JITSU" class="splash-logo" />
-    <audio id="appIntroSound" src="assets/appintroboom.mp3" preload="auto"></audio>
+    <audio id="introSound" src="assets/appintroboom.mp3" preload="auto"></audio>
   </div>
 
   <main class="container">
     <header class="topbar">
-      <div class="datetime">
-        <div id="dateText" aria-live="polite"></div>
-        <div id="timeText" aria-live="polite"></div>
+      <div class="datetime desktop-only">
+        <div id="dateText"></div>
+        <div id="timeText"></div>
       </div>
 
+      <!-- Título adaptável (duas linhas no mobile) -->
       <h1 class="brand" id="appTitle">
         <span class="line1">HORIZONTE JIU-JITSU</span><br class="mobile-break" />
         <span class="line2">• TIMER •</span>
       </h1>
 
-      <div class="right-side">
+      <div class="right-side desktop-only">
         <div class="top-controls">
           <label class="inline">
             <span>Tema</span>
             <select id="themeSelect">
-              <option value="horizon">Horizon (escuro)</option>
-              <option value="classico">Clássico (escuro)</option>
+              <option value="horizon" selected>Horizon (escuro)</option>
+              <option value="classico">Clássico</option>
               <option value="claro">Claro</option>
               <option value="estados">Cores por estado</option>
             </select>
@@ -50,7 +50,7 @@
           <label class="inline">
             <span>Sons</span>
             <select id="soundSelect">
-              <option value="on">ON</option>
+              <option value="on" selected>ON</option>
               <option value="off">OFF</option>
             </select>
           </label>
@@ -59,13 +59,14 @@
     </header>
 
     <section class="timer-section" id="timerSection">
-      <img src="assets/logo.png" alt="Logo HORIZONTE" class="logo-top mobile-only" id="logoTop" />
+      <!-- Logo superior (mobile) -->
+      <img src="assets/logo.png" alt="Logo Horizonte" class="logo-top mobile-only" id="logoTop" />
 
       <div id="statusPanel" class="status-panel">ROUND 1/1 • PAUSADO</div>
 
       <div class="display-wrap" id="displayWrap">
-        <div class="display" id="countdownDisplay" aria-live="polite">00:00</div>
-        <img src="assets/logo.png" alt="Logo HORIZONTE" class="logo-mark side desktop-only" id="logoMain" />
+        <div class="display" id="countdownDisplay">00:00</div>
+        <img src="assets/logo.png" alt="Logo Horizonte" class="logo-mark side desktop-only" id="logoMain" />
       </div>
 
       <form id="setForm" class="set-form" onsubmit="return false">
@@ -116,7 +117,7 @@
           </select>
         </label>
 
-        <button id="applyBtn" class="btn btn-define btn-lg btn-fixed btn-define-like-select" type="button"><strong>DEFINIR</strong></button>
+        <button id="applyBtn" class="btn btn-define btn-lg btn-fixed" type="button"><strong>DEFINIR</strong></button>
       </form>
 
       <div class="controls" id="controls">
@@ -126,6 +127,7 @@
         <button id="soundTestBtn" class="btn btn-lg btn-fixed"><strong>TESTAR SOM</strong></button>
       </div>
 
+      <!-- Seletores para mobile -->
       <div class="mobile-bottom-selects mobile-only">
         <label class="inline">
           <span>Tema</span>
@@ -136,6 +138,7 @@
             <option value="estados">Cores por estado</option>
           </select>
         </label>
+
         <label class="inline">
           <span>Sons</span>
           <select id="soundSelectMobile">
@@ -145,11 +148,12 @@
         </label>
       </div>
 
-      <img src="assets/logo.png" alt="Logo HORIZONTE" class="logo-bottom mobile-only" id="logoBottom" />
+      <!-- Logo inferior (mobile) -->
+      <img src="assets/logo.png" alt="Logo Horizonte" class="logo-bottom mobile-only" id="logoBottom" />
     </section>
 
     <footer class="footer">
-      <small id="buildInfo">v1.9.4 • atualizado em --/--/---- • desenvolvido por Vinicius Simões</small>
+      <small id="buildInfo">v1.9.5.fix • atualizado em 18/10/2025 • desenvolvido por Vinicius Simões</small>
     </footer>
   </main>
 </body>

@@ -1,18 +1,16 @@
 /* =========================================================
    HORIZONTE JIU JITSU • TIMER
-   Versão: 1.9.4
-   Alterações: Som appintroboom.mp3 no splash + atualização de versão
+   Versão: 1.9.5.fix
+   Base: v1.9.3 original (restaurada integralmente)
+   Alterações: som do splash (appintroboom.mp3), bloqueio de rolagem e Wake Lock.
    ========================================================= */
 
-(() => {
-  "use strict";
+(function () {
 
-  /* --------------------------
-     ELEMENTOS GLOBAIS
-  --------------------------- */
-  const splash = document.getElementById("splash");
-  const introSound = document.getElementById("appIntroSound");
-  const buildInfo = document.getElementById("buildInfo");
+  // =========================================================
+  // ===== VARIÁVEIS GERAIS E ELEMENTOS DE INTERFACE =====
+  // =========================================================
+
   const countdownDisplay = document.getElementById("countdownDisplay");
   const statusPanel = document.getElementById("statusPanel");
   const startPauseBtn = document.getElementById("startPauseBtn");
@@ -20,322 +18,328 @@
   const resetBtn = document.getElementById("resetBtn");
   const soundTestBtn = document.getElementById("soundTestBtn");
   const applyBtn = document.getElementById("applyBtn");
+
   const prepSelect = document.getElementById("prepSelect");
   const minutesSelect = document.getElementById("minutesSelect");
   const secondsSelect = document.getElementById("secondsSelect");
   const roundsSelect = document.getElementById("roundsSelect");
   const restSelect = document.getElementById("restSelect");
+
   const themeSelect = document.getElementById("themeSelect");
   const soundSelect = document.getElementById("soundSelect");
   const themeSelectMobile = document.getElementById("themeSelectMobile");
   const soundSelectMobile = document.getElementById("soundSelectMobile");
-  const timeText = document.getElementById("timeText");
+
   const dateText = document.getElementById("dateText");
+  const timeText = document.getElementById("timeText");
 
-  /* --------------------------
-     ÁUDIOS
-  --------------------------- */
-  const sounds = {
-    beep: new Audio("assets/beep.mp3"),
-    click: new Audio("assets/click.mp3"),
-    fight: new Audio("assets/fight.mp3"),
-    gong: new Audio("assets/gong.mp3"),
-    endrest: new Audio("assets/end_rest.mp3")
-  };
+  const buildInfo = document.getElementById("buildInfo");
 
-  Object.values(sounds).forEach(a => {
-    a.preload = "auto";
-    a.volume = 0.8;
-  });
+  // =========================================================
+  // ===== SONS E ÁUDIOS =====
+  // =========================================================
 
-  /* --------------------------
-     VARIÁVEIS DE ESTADO
-  --------------------------- */
+  const beep = new Audio("assets/beep.mp3");
+  const gong = new Audio("assets/gong.mp3");
+  const fight = new Audio("assets/fight.mp3");
+  const click = new Audio("assets/click.mp3");
+  const endRest = new Audio("assets/end_rest.mp3");
+
+  const introSound = document.getElementById("introSound"); // Som do splash
+
+  let soundEnabled = true;
+
+  // =========================================================
+  // ===== SPLASH INICIAL =====
+  // =========================================================
+
+  const splash = document.getElementById("splash");
+
+  if (splash) {
+    setTimeout(() => {
+      try {
+        introSound.currentTime = 0;
+        introSound.play().catch(() => { /* autoplay bloqueado */ });
+      } catch (e) { /* ignora erros */ }
+      splash.classList.add("hidden");
+      document.body.classList.remove("splashing"); // Libera rolagem após o splash
+    }, 5000);
+  }
+
+  // =========================================================
+  // ===== VARIÁVEIS DE CONTROLE DO CRONÔMETRO =====
+  // =========================================================
+
   let timer = null;
+  let totalSeconds = 0;
   let remaining = 0;
-  let round = 1;
+  let currentRound = 1;
   let totalRounds = 1;
   let restTime = 0;
   let prepTime = 0;
-  let state = "idle"; // idle | running | paused | rest | prep | finished
-  let soundEnabled = true;
+  let state = "idle"; // idle, prep, round, rest, paused, done
   let focusMode = false;
 
-  /* --------------------------
-     SPLASH + SOM INTRODUTÓRIO
-  --------------------------- */
-  if (introSound) {
+  // =========================================================
+  // ===== BLOQUEIO DE TELA (WAKE LOCK API) =====
+  // =========================================================
+
+  let wakeLock = null;
+
+  async function requestWakeLock() {
     try {
-      setTimeout(() => {
-        introSound.currentTime = 0;
-        introSound.play().catch(() => {});
-      }, 200);
-    } catch (e) {}
-  }
-
-  setTimeout(() => {
-    splash.classList.add("hidden");
-    document.body.classList.remove("splashing");
-  }, 5000);
-
-  /* --------------------------
-     DATA E HORA
-  --------------------------- */
-  function updateDateTime() {
-    const now = new Date();
-    dateText.textContent = now.toLocaleDateString("pt-BR");
-    timeText.textContent = now.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
-  }
-  setInterval(updateDateTime, 1000);
-  updateDateTime();
-
-  /* --------------------------
-     FUNÇÕES UTILITÁRIAS
-  --------------------------- */
-  function playSound(name) {
-    if (!soundEnabled) return;
-    const s = sounds[name];
-    if (s) {
-      s.currentTime = 0;
-      s.play().catch(() => {});
+      if ("wakeLock" in navigator) {
+        wakeLock = await navigator.wakeLock.request("screen");
+        console.log("[WakeLock] Ativo");
+        wakeLock.addEventListener("release", () => {
+          console.log("[WakeLock] Liberado");
+        });
+      }
+    } catch (err) {
+      console.warn("[WakeLock] Erro ao solicitar:", err);
     }
   }
 
+  function releaseWakeLock() {
+    if (wakeLock !== null) {
+      wakeLock.release();
+      wakeLock = null;
+    }
+  }
+
+  // =========================================================
+  // ===== ATUALIZAÇÃO DE DATA E HORA =====
+  // =========================================================
+
+  function updateDateTime() {
+    const now = new Date();
+    const options = { weekday: "short", day: "2-digit", month: "2-digit", year: "numeric" };
+    dateText.textContent = now.toLocaleDateString("pt-BR", options).replace(".", "");
+    timeText.textContent = now.toLocaleTimeString("pt-BR", { hour12: false });
+  }
+
+  setInterval(updateDateTime, 1000);
+  updateDateTime();
+
+  // =========================================================
+  // ===== FUNÇÕES AUXILIARES =====
+  // =========================================================
+
   function formatTime(sec) {
-    const m = Math.floor(sec / 60);
-    const s = sec % 60;
-    return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+    const m = Math.floor(sec / 60).toString().padStart(2, "0");
+    const s = Math.floor(sec % 60).toString().padStart(2, "0");
+    return `${m}:${s}`;
+  }
+
+  function updateStatus(text) {
+    statusPanel.textContent = text;
+  }
+
+  function playSound(audio) {
+    if (soundEnabled) {
+      audio.currentTime = 0;
+      audio.play().catch(() => {});
+    }
   }
 
   function resetDisplayColor() {
-    countdownDisplay.style.color = "";
-    countdownDisplay.style.animation = "none";
+    countdownDisplay.style.color = "#e6edf3";
   }
 
-  function blink(color, times = 3, speed = 300) {
-    let i = 0;
-    const interval = setInterval(() => {
-      countdownDisplay.style.color = i % 2 === 0 ? color : "";
-      if (++i > times * 2) clearInterval(interval);
-    }, speed);
-  }
-
-  /* --------------------------
-     TEMAS E SONS
-  --------------------------- */
-  function applyTheme(value) {
-    document.documentElement.dataset.theme = value;
-    localStorage.setItem("theme", value);
-  }
-
-  function applySoundState(value) {
-    soundEnabled = value === "on";
-    localStorage.setItem("sound", value);
-  }
-
-  themeSelect.addEventListener("change", e => {
-    applyTheme(e.target.value);
-    themeSelectMobile.value = e.target.value;
-  });
-  themeSelectMobile.addEventListener("change", e => {
-    applyTheme(e.target.value);
-    themeSelect.value = e.target.value;
-  });
-
-  soundSelect.addEventListener("change", e => {
-    applySoundState(e.target.value);
-    soundSelectMobile.value = e.target.value;
-  });
-  soundSelectMobile.addEventListener("change", e => {
-    applySoundState(e.target.value);
-    soundSelect.value = e.target.value;
-  });
-
-  /* --------------------------
-     INICIALIZAÇÃO DE PREFERÊNCIAS
-  --------------------------- */
-  const savedTheme = localStorage.getItem("theme") || "horizon";
-  const savedSound = localStorage.getItem("sound") || "on";
-  themeSelect.value = themeSelectMobile.value = savedTheme;
-  soundSelect.value = soundSelectMobile.value = savedSound;
-  applyTheme(savedTheme);
-  applySoundState(savedSound);
-
-  /* --------------------------
-     FUNÇÕES DE CONTROLE DO TIMER
-  --------------------------- */
-  function updateDisplay() {
-    countdownDisplay.textContent = formatTime(remaining);
-  }
-
-  function stopTimer() {
-    if (timer) clearInterval(timer);
-    timer = null;
-  }
+  // =========================================================
+  // ===== CONTAGEM REGRESSIVA =====
+  // =========================================================
 
   function startCountdown(duration, nextState) {
     remaining = duration;
-    updateDisplay();
-    stopTimer();
-    state = nextState;
-    timer = setInterval(() => {
-      remaining--;
-      updateDisplay();
+    clearInterval(timer);
 
-      // últimos segundos
-      if (remaining <= 3 && remaining > 0) {
-        countdownDisplay.style.color = "#ef4444";
-        countdownDisplay.style.animation = "blink 0.8s step-end infinite";
-        playSound("beep");
-      }
+    timer = setInterval(() => {
+      countdownDisplay.textContent = formatTime(remaining);
 
       if (remaining <= 0) {
-        stopTimer();
-        countdownDisplay.style.animation = "none";
+        clearInterval(timer);
 
         if (state === "prep") {
-          playSound("fight");
-          startRound();
-        } else if (state === "running") {
-          playSound("gong");
-          if (round < totalRounds) {
-            startRest();
+          playSound(fight);
+          state = "round";
+          updateStatus(`ROUND ${currentRound}/${totalRounds}`);
+          startCountdown(totalSeconds, "round");
+          return;
+        }
+
+        if (state === "round") {
+          playSound(gong);
+          if (currentRound < totalRounds) {
+            currentRound++;
+            state = "rest";
+            updateStatus("DESCANSO");
+            startCountdown(restTime, "rest");
           } else {
             finishAll();
           }
-        } else if (state === "rest") {
-          playSound("endrest");
-          round++;
-          startRound();
+          return;
+        }
+
+        if (state === "rest") {
+          if (currentRound <= totalRounds) {
+            playSound(endRest);
+            state = "round";
+            updateStatus(`ROUND ${currentRound}/${totalRounds}`);
+            startCountdown(totalSeconds, "round");
+          }
+          return;
         }
       }
+
+      // Sinais sonoros e visuais
+      if (remaining <= 3 && state === "round") {
+        countdownDisplay.style.color = "#ef4444";
+        playSound(beep);
+      } else if (remaining <= 10 && state === "rest") {
+        countdownDisplay.style.color = "#facc15";
+        playSound(beep);
+      } else if (state === "prep") {
+        countdownDisplay.style.color = "#f59e0b";
+        playSound(beep);
+      }
+
+      remaining--;
     }, 1000);
   }
 
+  // =========================================================
+  // ===== FUNÇÕES DE FASES =====
+  // =========================================================
+
   function startPrep() {
     state = "prep";
-    statusPanel.textContent = "PREPARAÇÃO";
-    countdownDisplay.style.color = "#f59e0b";
+    updateStatus("PREPARAR!");
     startCountdown(prepTime, "prep");
   }
 
   function startRound() {
-    state = "running";
-    countdownDisplay.style.color = "#22c55e";
-    statusPanel.textContent = `ROUND ${round}/${totalRounds}`;
-    startCountdown(currentRoundTime, "running");
-  }
-
-  function startRest() {
-    state = "rest";
-    countdownDisplay.style.color = "#9aa5b1";
-    statusPanel.textContent = "DESCANSO";
-    startCountdown(restTime, "rest");
+    state = "round";
+    updateStatus(`ROUND ${currentRound}/${totalRounds}`);
+    playSound(fight);
+    startCountdown(totalSeconds, "round");
   }
 
   function finishAll() {
-    state = "finished";
+    state = "done";
+    updateStatus("FIM!");
     countdownDisplay.style.color = "#ef4444";
-    statusPanel.textContent = "FIM DO TREINO";
-    playSound("gong");
+    playSound(gong);
+    releaseWakeLock(); // Libera o bloqueio ao final
   }
 
-  function pauseTimer() {
-    stopTimer();
-    state = "paused";
-    countdownDisplay.style.color = "#eab308";
+  // =========================================================
+  // ===== TEMAS E SONS =====
+  // =========================================================
+
+  function applyTheme(value) {
+    document.documentElement.setAttribute("data-theme", value);
+    localStorage.setItem("theme", value);
   }
 
-  function resumeTimer() {
-    if (state === "paused") {
-      startCountdown(remaining, "running");
-      countdownDisplay.style.color = "#22c55e";
-    }
+  function applySoundState(value) {
+    soundEnabled = (value === "on");
+    localStorage.setItem("sound", value);
   }
 
-  function resetAll(confirmReset = true) {
-    if (confirmReset && !confirm("Deseja realmente redefinir o cronômetro?")) return;
-    stopTimer();
-    state = "idle";
-    round = 1;
-    remaining = 0;
-    countdownDisplay.textContent = "00:00";
-    resetDisplayColor();
-    statusPanel.textContent = "ROUND 1/1 • PAUSADO";
-    document.body.classList.remove("focus");
-  }
+  themeSelect.addEventListener("change", (e) => applyTheme(e.target.value));
+  soundSelect.addEventListener("change", (e) => applySoundState(e.target.value));
+  themeSelectMobile.addEventListener("change", (e) => applyTheme(e.target.value));
+  soundSelectMobile.addEventListener("change", (e) => applySoundState(e.target.value));
 
-  /* --------------------------
-     EVENTOS DE CONTROLE
-  --------------------------- */
+  // Inicializa preferências salvas
+  const savedTheme = localStorage.getItem("theme") || "horizon";
+  const savedSound = localStorage.getItem("sound") || "on";
+  applyTheme(savedTheme);
+  applySoundState(savedSound);
+  themeSelect.value = savedTheme;
+  soundSelect.value = savedSound;
+  themeSelectMobile.value = savedTheme;
+  soundSelectMobile.value = savedSound;
+
+  // =========================================================
+  // ===== BOTÕES PRINCIPAIS =====
+  // =========================================================
+
+  soundTestBtn.addEventListener("click", () => {
+    if (!soundEnabled) return;
+    click.currentTime = 0;
+    click.play();
+  });
+
   applyBtn.addEventListener("click", () => {
-    playSound("click");
-    const m = parseInt(minutesSelect.value);
-    const s = parseInt(secondsSelect.value);
-    const total = m * 60 + s;
-    prepTime = parseInt(prepSelect.value);
-    totalRounds = parseInt(roundsSelect.value);
-    restTime = parseInt(restSelect.value);
-    currentRoundTime = total;
-    resetAll(false);
-    alert("Configuração definida!");
+    prepTime = parseInt(prepSelect.value) || 0;
+    const mins = parseInt(minutesSelect.value) || 0;
+    const secs = parseInt(secondsSelect.value) || 0;
+    totalSeconds = mins * 60 + secs;
+    totalRounds = parseInt(roundsSelect.value) || 1;
+    restTime = parseInt(restSelect.value) || 0;
+    currentRound = 1;
+    state = "idle";
+    countdownDisplay.textContent = formatTime(totalSeconds);
+    updateStatus("PRONTO");
   });
 
   startPauseBtn.addEventListener("click", () => {
-    playSound("click");
-    if (state === "idle") {
-      document.body.classList.add("focus");
-      if (prepTime > 0) startPrep();
-      else startRound();
+    if (state === "idle" || state === "paused") {
+      if (state === "idle") {
+        focusMode = true;
+        document.body.classList.add("focus");
+        currentRound = 1;
+        if (prepTime > 0) startPrep();
+        else startRound();
+        requestWakeLock(); // Mantém a tela ligada
+      } else if (state === "paused") {
+        state = "round";
+        updateStatus(`ROUND ${currentRound}/${totalRounds}`);
+        startCountdown(remaining, state);
+      }
       startPauseBtn.textContent = "PAUSAR";
-      return;
-    }
-    if (state === "running") {
-      pauseTimer();
+      resetBtn.disabled = true;
+    } else if (state === "round" || state === "rest" || state === "prep") {
+      state = "paused";
+      clearInterval(timer);
+      updateStatus("PAUSADO");
       startPauseBtn.textContent = "RETOMAR";
-      return;
-    }
-    if (state === "paused") {
-      resumeTimer();
-      startPauseBtn.textContent = "PAUSAR";
-      return;
     }
   });
 
   stopBtn.addEventListener("click", () => {
-    playSound("click");
-    if (confirm("Deseja parar o treino atual?")) {
-      resetAll(false);
-      startPauseBtn.textContent = "INICIAR";
+    clearInterval(timer);
+    if (confirm("Deseja realmente PARAR o cronômetro?")) {
+      state = "idle";
+      focusMode = false;
+      document.body.classList.remove("focus");
+      countdownDisplay.textContent = "00:00";
+      updateStatus("PARADO");
+      resetBtn.disabled = false;
+      releaseWakeLock(); // Libera o bloqueio ao parar
     }
   });
 
   resetBtn.addEventListener("click", () => {
-    playSound("click");
-    resetAll(true);
-    startPauseBtn.textContent = "INICIAR";
-  });
-
-  soundTestBtn.addEventListener("click", () => {
-    playSound("beep");
-  });
-
-  /* --------------------------
-     RODAPÉ DE VERSÃO
-  --------------------------- */
-  if (buildInfo) {
-    const now = new Date();
-    buildInfo.textContent = `v1.9.4 • atualizado em ${now.toLocaleDateString("pt-BR")} • desenvolvido por Vinicius Simões`;
-  }
-
-  /* --------------------------
-     ANIMAÇÕES CSS
-  --------------------------- */
-  const style = document.createElement("style");
-  style.textContent = `
-    @keyframes blink {
-      50% { opacity: 0.4; }
+    if (confirm("Deseja realmente redefinir as configurações iniciais?")) {
+      clearInterval(timer);
+      state = "idle";
+      countdownDisplay.textContent = "00:00";
+      updateStatus("PRONTO");
+      document.documentElement.setAttribute("data-theme", "horizon");
+      themeSelect.value = "horizon";
+      soundSelect.value = "on";
+      localStorage.setItem("theme", "horizon");
+      localStorage.setItem("sound", "on");
+      prepSelect.value = "0";
+      minutesSelect.value = "5";
+      secondsSelect.value = "0";
+      roundsSelect.value = "1";
+      restSelect.value = "30";
+      releaseWakeLock(); // Libera o bloqueio no reset
     }
-  `;
-  document.head.appendChild(style);
+  });
+
 })();
