@@ -1,90 +1,145 @@
-<img src="assets/logo.png" alt="Logo Horizonte Jiu Jitsu" width="180"/>
+<p align="center">
+  <img src="assets/logo.png" alt="Logo HORIZONTE JIU JITSU" width="300">
+</p>
 
 # 🥋 HORIZONTE JIU JITSU • TIMER
 
-Aplicativo de cronômetro interativo para treinos de Jiu-Jitsu, adaptado para **TV**, **desktop**, **mobile** e **tablet**, com **sons**, **temas**, **modo foco** e **PWA** (instalável). O app foi desenvolvido por Vinicius Simões para a equipe da HORIZONTE JIU JITSU, com sede na cidade de João Pessoa/PB e liderada pelo Professor Alexandre Wanderley, para a honra e glória de Nosso Senhor Jesus Cristo.
+Aplicativo de cronômetro interativo para treinos de Jiu-Jitsu, adaptado para **TV**, **desktop**, **mobile** e **tablet**, com **sons**, **temas**, **modo foco**, **modo infinito**, **presets rápidos**, e **PWA** (instalável). Desenvolvido por Vinicius Simões para a equipe HORIZONTE JIU JITSU (João Pessoa/PB, liderada pelo Professor Alexandre Wanderley), para a honra e glória de Nosso Senhor Jesus Cristo.
 
 ---
 
 ## 🎯 Objetivo
-Oferecer um cronômetro de treinos claro, grande e responsivo, com:
-- Contagem regressiva de **rounds** e **intervalos**;
-- **Preparação** antes do 1º round (5s/10s) e aviso nos **10s finais do descanso**;
-- **Sons** distintos (beep, fight, gong) e **tema** selecionável;
-- **Modo foco** para treinar com atenção no cronômetro;
-- **Persistência** das configurações (salvas no dispositivo);
-- PWA para “Adicionar à tela inicial”.
+Cronômetro claro, grande e responsivo para treinos, com:
+- Contagem regressiva de **rounds** e **intervalos** (incluindo modo infinito com ∞);
+- **Preparação** (5s/10s) com piscar laranja e beeps;
+- Aviso nos **10s finais do descanso** (piscar amarelo, beeps, "PREPARAR!");
+- **Sons** (beep, fight, gong, appintroboom, padrão ON) e **temas** selecionáveis;
+- **Modo foco** com fullscreen automático e status (rounds/estágio) acima do tempo;
+- **Presets rápidos** (Iniciante: 10s prep, 3x3:00, 60s rest; Avançado: 10s prep, 3x5:00, 60s rest);
+- **Persistência** de configurações (localStorage);
+- PWA instalável, com suporte offline.
 
 ---
 
 ## 🧭 Como usar
-1. **Defina**: preparação, tempo do round (min/seg), quantidade de rounds e intervalos.  
-2. Clique em **DEFINIR** para aplicar as configurações.  
-3. Clique em **INICIAR** (depois **PAUSAR/RETOMAR**).  
-4. **PARAR** encerra o treino (com confirmação).  
-5. **RESET** (apenas em idle) volta ao padrão salvo (1 round 5:00, sem preparação, tema Horizon, sons ON).  
-6. **Tema** e **Sons**: seletores no topo (desktop/TV) e, no mobile/tablet, após os botões de controle.
+1. **Defina**: preparação, tempo do round, rounds (1-5 ou ∞), intervalo. Ou use **presets** (Iniciante/Avançado).
+2. Clique em **DEFINIR** ou **preset** para aplicar.
+3. Clique em **INICIAR** (depois **PAUSAR/RETOMAR**). Em mobile, swipe direita pausa, esquerda para.
+4. **PARAR** encerra (com confirmação).
+5. **RESET** (em idle) restaura padrão (1 round, 5:00, sem prep, tema Horizon, sons ON).
+6. **Tema** e **Sons**: seletores no topo (desktop/TV, lado a lado) ou após controles (mobile/tablet).
 
 ---
 
-## 📲 Manual de instalação do PWA (passo a passo simples)
+## 📲 Manual de instalação do PWA
+Instale como app nativo, funcionando offline após primeiro acesso.
 
-Você pode **instalar o aplicativo** no seu celular, tablet ou computador como um app normal — depois de aberto ao menos uma vez, funciona até **offline**.
+### 📱 Android (Chrome/Edge)
+1. Acesse o site.
+2. Toque em **⋮ (menu)** > **Adicionar à tela inicial**.
+3. Confirme com **Adicionar**.
+4. Ícone **HORIZONTE TIMER** aparece na tela inicial.
 
-### 📱 Android (Google Chrome ou Edge)
-1. Acesse o site do cronômetro.  
-2. Toque em **⋮ (menu)** no canto superior direito.  
-3. Selecione **“Adicionar à tela inicial”**.  
-4. Confirme com **“Adicionar”**.  
-5. O ícone **BJJ TIMER** aparecerá na tela inicial.
+### 🍎 iPhone/iPad (Safari)
+1. Abra no **Safari**.
+2. Toque no **ícone de compartilhamento** (⬆️).
+3. Selecione **Adicionar à Tela de Início**.
+4. Confirme e abra pelo ícone.
 
-### 🍎 iPhone / iPad (Safari)
-1. Abra o site no **Safari**.  
-2. Toque no **ícone de compartilhamento** (quadrado com seta ↑).  
-3. Toque em **“Adicionar à Tela de Início”**.  
-4. Confirme em **“Adicionar”**.  
-5. Abra pelo novo ícone para usar em modo de app.
+### 💻 Computador (Chrome/Edge/Brave)
+1. Clique no ícone **Instalar** na barra de endereços (ou botão **INSTALAR APP**).
+2. Confirme para abrir em janela própria.
 
-### 💻 Computador (Windows / macOS)
-1. Abra no **Chrome/Edge/Brave**.  
-2. Clique no ícone **Instalar** (na barra de endereços).  
-3. Confirme a instalação.  
-4. O app abre em **janela própria**.
+### 📺 Smart TV
+- Acesse no navegador, adicione aos favoritos ou instale como PWA.
+- Use em **tela cheia** para treinos.
 
-### 📺 Smart TV (Tizen / WebOS / Android TV)
-- Acesse o endereço no navegador da TV.  
-- Adicione aos favoritos ou instale como PWA se o navegador oferecer a opção.  
-- Use em **tela cheia** durante o treino.
-
-> 💡 Dica: se já instalou antes, para atualizar ícones/descrição, pode ser preciso **remover e reinstalar** o PWA.
+> 💡 **Dica**: Para atualizar, remova e reinstale o PWA.
 
 ---
 
 ## 🧩 Controles
-- **INICIAR / PAUSAR / RETOMAR**  
-- **PARAR** (com confirmação)  
-- **RESET** (apenas em idle; com confirmação para padrão)  
+- **INICIAR / PAUSAR / RETOMAR**
+- **PARAR** (com confirmação)
+- **RESET** (em idle, com confirmação)
 - **TESTAR SOM**
+- **PRESETS**: Iniciante (10s prep, 3x3:00, 60s rest); Avançado (10s prep, 3x5:00, 60s rest)
 
-Atalhos (quando disponíveis):  
-- **Enter / Play-Pause**: iniciar/pausar/retomar  
-- **Esc / Backspace**: parar (com confirmação)  
-- **0**: alterna sons ON/OFF  
-- **1–5**: define rapidamente a quantidade de rounds
+**Atalhos:**
+- **Enter / Play-Pause**: Iniciar/pausar/retomar
+- **Esc / Backspace**: Parar (com confirmação)
+- **0**: Alterna sons ON/OFF
+- **1–5**: Define rounds
+- **Swipe (mobile)**: Direita (pausar), esquerda (parar)
 
 ---
 
 ## 📱 PWA
-- O app é instalável no celular via navegador (Chrome/Edge/Safari) → **Adicionar à tela inicial**.  
-- Ícones: `favicon.ico`, `icon-256.png`, `assets/icons/icon-192.png`, `assets/icons/icon-512.png`.  
-- `manifest.json` + `service-worker.js` garantem experiência offline básica.  
-- Em atualizações, o **CACHE_NAME** muda no service worker para forçar refresh.
+- Instalável via **Adicionar à tela inicial** ou botão **INSTALAR APP**.
+- Ícones: `favicon.ico`, `icon-256.png`, `icon-192.png`, `icon-512.png`.
+- `manifest.json` + `service-worker.js` para offline.
+- Cache atualizado por versão.
+
+---
+
+## 🧾 Testes e Ferramentas
+- **Jest**: Testes unitários para funções como `enterPhase`, `render`, `syncCfgFromSelects`. Setup: `npm install --save-dev jest`, crie `/tests/timer.test.js`. Exemplo:
+  ```javascript
+  test('enterPhase prep sets remain correctly', () => {
+    enterPhase('prep');
+    expect(remain).toBe(cfg.prepSeconds);
+  });
+  ```
+  Rodar: `npm test`. Cobertura >80%.
+- **Lighthouse**: Use Chrome DevTools > Lighthouse. Mire 100/100:
+  - **Performance**: Minifique JS/CSS, comprima imagens (ex.: TinyPNG).
+  - **Acessibilidade**: Verifique ARIA, contrastes (WCAG 2.1 AA).
+  - **Best Practices**: HTTPS, sem console errors.
+  - **PWA**: Manifest válido, service-worker robusto.
 
 ---
 
 ## 🧾 Histórico de versões
+- **v2.0.2**
+  - 📐 **Tela Configuração PC**: Seletores de configuração (PREPARAÇÃO, TEMPO, ROUNDS, INTERVALO, DEFINIR) revertidos para horizontal, sem rolagem.
+  - 📐 **Seletores Temas/Sons**: Corrigido para ficarem lado a lado no PC (gap 12px).
+  - 🖼️ **Modo Foco PC**: Logo menor à direita dos botões (PAUSAR/RETOMAR, PARAR), botões visíveis sem corte.
+  - 🔊 **Som Padrão**: Definido como ON na inicialização e reset.
+  - 🔒 Integridade mantida: Splash, timer, presets, modo infinito, fullscreen, acessibilidade, PWA.
 
-## 🧾 Histórico de versões
+- **v2.0.1**
+  - 🗑️ **Removido**: Funções e botões de exportar/importar configs.
+  - ⏱️ **Display no foco**: Status (rounds/estágio) exibido acima do tempo.
+  - ✅ **Confirmado**: Últimos 10s de descanso piscam amarelo, tocam beeps, mostram "PREPARAR!".
+  - 🟠 **Preparação**: Display pisca laranja com beeps por segundo.
+  - 🛠️ **Presets**: Iniciante (10s prep, 3x3:00, 60s rest); Avançado (10s prep, 3x5:00, 60s rest).
+  - 📐 **Layout PC**: Seletores sons/temas lado a lado; botões presets lado a lado abaixo seletores.
+  - 🖼️ **Foco PC**: Logo sem invadir display (gap aumentado); números maiores (font-size ajustado).
+  - 🌐 **Favicon**: Adicionado `<link rel="shortcut icon">` para compatibilidade.
+  - 🖼️ **Splash**: Finaliza em 5s com som `appintroboom.mp3`, sem flash inicial do cronômetro.
+  - ♾️ **Modo Infinito**: Rounds ilimitados com ∞.
+  - 📺 **Fullscreen**: Automático no modo foco.
+  - 📱 **Swipe**: Direita pausa, esquerda para (mobile).
+  - ♿ **Acessibilidade**: `role="timer"`, `aria-valuenow`, vibração fallback.
+  - ⏱️ **Precisão**: `performance.now()` no timer.
+  - 🧹 **Simplificação**: Unificados selects, removida detecção UA, CSS consolidado.
+  - 📲 **PWA**: Prompt de instalação customizado.
+  - 🔍 **Lighthouse/Jest**: Suporte a testes/auditoria.
+  - 🔒 Integridade total preservada.
+
+
+- **v2.0.0**
+  - ♾️ **Modo Infinito**: Rounds ilimitados com ∞.
+  - 📺 **Fullscreen**: Automático no modo foco.
+  - 🛠️ **Presets**: Iniciante (3min, 3 rounds), Avançado (5min, 5 rounds).
+  - 📤 **Export/Import**: Configs via JSON.
+  - 📱 **Swipe**: Direita pausa, esquerda para (mobile).
+  - ♿ **Acessibilidade**: `role="timer"`, `aria-valuenow`, vibração fallback.
+  - ⏱️ **Precisão**: `performance.now()` no timer.
+  - 🧹 **Simplificação**: Unificados selects, removida detecção UA, CSS consolidado.
+  - 📲 **PWA**: Prompt de instalação customizado.
+  - 🔍 **Lighthouse/Jest**: Suporte a testes/auditoria.
+  - 🔒 Integridade total preservada.
 
 - **v1.9.5.fix**
   - 🎵 Adicionado som **appintroboom.mp3** na tela inicial (splash de 5s).
@@ -220,21 +275,22 @@ Atalhos (quando disponíveis):
 ---
 
 ## 📁 Estrutura de pastas
-/ (raiz do app)
-index.html
-styles.css
-script.js
-manifest.json
-service-worker.js
-favicon.ico
-icon-256.png
-apple-touch-icon.png
+```
+/index.html
+/styles.css
+/script.js
+/manifest.json
+/service-worker.js
+/favicon.ico
+/icon-256.png
+/apple-touch-icon.png
 /assets
-/icons
-icon-192.png
-icon-512.png
-logo.png
-beep.mp3
-click.mp3
-fight.mp3
-gong.mp3
+  /icons
+    icon-192.png
+    icon-512.png
+  logo.png
+  beep.mp3
+  click.mp3
+  fight.mp3
+  gong.mp3
+```
